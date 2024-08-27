@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: asta-service-deployment
+  labels:
+    app: asta-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: asta-service
+  template:
+    metadata:
+      labels:
+        app: asta-service
+    spec:
+      containers:
+        - name: asta-service
+          image: marcofresolone/asta-service
+          ports:
+            - containerPort: 3000
