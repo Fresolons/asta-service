@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: asta-service
+  name: asta-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: asta-service
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: asta-service
+    spec:
+      containers:
+      - image: marcofresolone/asta-service
+        name: asta-service
+        resources: {}
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-service
+  labels:
+    app: node-service
+spec:
+  type: NodePort
+  ports:
+  - nodePort: 30001
+    port: 80
+    targetPort: 5000
+  selector:
+    app: asta-service
