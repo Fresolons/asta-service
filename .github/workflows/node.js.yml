@@ -70,7 +70,7 @@ jobs:
           pwd
           cat deployment.yaml
           pwd
-          sed -i "s+marcofresolone/image.*+marcofresolone/image:app-$RUN_NUMBER+g" deployment.yaml
+          sed -i "s+marcofresolone/asta-service:app-[^ ]*+marcofresolone/asta-service:app-${RUN_NUMBER}+g" deployment.yaml
           cat deployment.yaml
           git add .
           git commit -m 'Done  by Github Actions   Job changemanifest: ${{ github.run_number }}'
