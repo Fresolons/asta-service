@@ -87,8 +87,10 @@ jobs:
         - name: Checkout source code
           uses: actions/checkout@v3
 
-        - name: List files in the root directory
-          run: ls -la
+        - name: Upload deployment.yaml to server
+          run: |
+            scp -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} deployment.yaml root@195.231.66.46:/home/marco/deployments/deployment.yaml
+
         
         - name: Set up SSH
           uses: webfactory/ssh-agent@v0.5.3
@@ -99,9 +101,9 @@ jobs:
           run: |
             ssh -o StrictHostKeyChecking=no root@195.231.66.46 << 'EOF'
             # Assicurati che kubectl e minikube siano configurati correttamente sul server
-            pwd
+            cd /home/marco/deployments
             ls -la
             minikube kubectl config use-context minikube
-            minikube kubectl apply -- -f ./deployment.yaml
+            minikube kubectl apply -- -f deployment.yaml
             kubectl set image deployment/asta-service:latest your-container-name=marcofresolone/asta-service:${{ github.sha }}
             EOF
