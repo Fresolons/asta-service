@@ -81,7 +81,7 @@ jobs:
           RUN_NUMBER: ${{ github.run_number }}
   deploy:
     name: Deploy
-    needs: [ build ]
+    needs: modifygit
     runs-on: ubuntu-latest
     steps:
         - name: Checkout source code
