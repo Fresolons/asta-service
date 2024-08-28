@@ -99,7 +99,8 @@ jobs:
           run: |
             ssh -o StrictHostKeyChecking=no root@195.231.66.46 << 'EOF'
             # Assicurati che kubectl e minikube siano configurati correttamente sul server
+            ls -la
             minikube kubectl config use-context minikube
-            minikube kubectl apply -- -f deployment.yaml
+            minikube kubectl apply -- -f ./deployment.yaml
             kubectl set image deployment/asta-service:latest your-container-name=marcofresolone/asta-service:${{ github.sha }}
             EOF
