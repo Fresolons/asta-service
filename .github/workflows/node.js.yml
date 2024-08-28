@@ -94,7 +94,7 @@ jobs:
     
         - name: Deploy to Minikube on private server
           run: |
-            ssh -o StrictHostKeyChecking=no user@your-server-ip << 'EOF'
+            ssh -o StrictHostKeyChecking=no root@195.231.66.46 << 'EOF'
             # Assicurati che kubectl e minikube siano configurati correttamente sul server
             kubectl config use-context minikube
             kubectl apply -f /path/to/your/kubernetes/manifests/project.yaml
