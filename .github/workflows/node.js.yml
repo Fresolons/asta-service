@@ -79,4 +79,24 @@ jobs:
           GIT_USERNAME: ${{ secrets.GIT_USERNAME }}
           GIT_PASSWORD: ${{ secrets.GIT_PASSWORD }}
           RUN_NUMBER: ${{ github.run_number }}
-
+  deploy:
+    name: Deploy
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout source code
+          uses: actions/checkout@v3
+    
+        - name: Set up SSH
+          uses: webfactory/ssh-agent@v0.5.3
+          with:
+              ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    
+        - name: Deploy to Minikube on private server
+          run: |
+            ssh -o StrictHostKeyChecking=no user@your-server-ip << 'EOF'
+            # Assicurati che kubectl e minikube siano configurati correttamente sul server
+            kubectl config use-context minikube
+            kubectl apply -f /path/to/your/kubernetes/manifests/project.yaml
+            kubectl set image deployment/your-deployment-name your-container-name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            EOF
