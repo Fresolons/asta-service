@@ -18,7 +18,7 @@ spec:
         app: asta-service
     spec:
       containers:
-      - image: marcofresolone/asta-service:app-14
+      - image: marcofresolone/asta-service:app-15
         name: asta-service
         resources: {}
 status: {}
