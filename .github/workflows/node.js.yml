@@ -84,22 +84,23 @@ jobs:
     needs: modifygit
     runs-on: ubuntu-latest
     steps:
-        - name: Checkout source code
-          uses: actions/checkout@v3
-
-        - name: List files in the root directory
-          run: ls -la
-        
-        - name: Set up SSH
-          uses: webfactory/ssh-agent@v0.5.3
-          with:
-              ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-    
-        - name: Deploy to Minikube on private server
-          run: |
-            ssh -o StrictHostKeyChecking=no root@195.231.66.46 << 'EOF'
-            # Assicurati che kubectl e minikube siano configurati correttamente sul server
-            minikube kubectl config use-context minikube
-            minikube kubectl apply -- -f deployment.yaml
-            kubectl set image deployment/asta-service:latest your-container-name=marcofresolone/asta-service:${{ github.sha }}
-            EOF
+      - uses: actions/checkout@v4
+        with:
+          repository: Fresolons/asta-service
+      - name: Start minikube
+        uses: Fresolons/asta-service
+      - name: Try the cluster!
+        run: kubectl get pods -A
+      - name: Build image
+        run: |
+          minikube image build -t local/devex:v1 .        
+      - name: Deploy to minikube
+        run:
+          kubectl apply -f deploy/k8s.yaml
+          kubectl wait --for=condition=ready pod -l app=local-devex
+      - name: Test service URLs
+        run: |
+          minikube service list
+          minikube service local-devex-svc --url
+          echo "------------------opening the service------------------"
+          curl $(minikube service local-devex-svc --url)      
