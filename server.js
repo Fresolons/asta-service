@@ -3,6 +3,9 @@ const cors = require("cors");
 const router = require("./router/router");
 const bodyParser = require("body-parser");
 const { default: mongoose } = require("mongoose");
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
 require("dotenv").config();
 
 mongoose.connect(
@@ -17,25 +20,25 @@ db.once("open", function () {
 
 const app = express();
 
-app.use((req, res, next) => {
-  console.log(req.originalUrl + " INIZIO");
-  next();
-  console.log(req.originalUrl + " FINE");
-});
+const sslServer = https.createServer({
+  key: fs.readFileSync(path.join(__dirname, '/etc/nginx/mycert.key')),
+  cert: fs.readFileSync(path.join(__dirname, '/etc/nginx/mycert.crt')),
+}, app);
 
-app.use(express.json());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(
+
+sslServer.use(express.json());
+sslServer.use(bodyParser.json());
+sslServer.use(bodyParser.urlencoded({ extended: false }));
+sslServer.use(
   cors({
     origin: "*",
   })
 );
 
-app.use(process.env.SERVICE_BASEPATH, router);
+sslServer.use(process.env.SERVICE_BASEPATH, router);
 
-app.listen(process.env.SERVICE_PORT, () =>
+sslServer.listen(process.env.SERVICE_PORT, () =>
   console.log(
-    "App inizializzata, in ascolto sulla porta: " + process.env.SERVICE_PORT
+    "sslServer inizializzata, in ascolto sulla porta: " + process.env.SERVICE_PORT
   )
 );
