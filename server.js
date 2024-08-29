@@ -20,22 +20,21 @@ db.once("open", function () {
 
 const app = express();
 
-const sslServer = https.createServer({
-  key: fs.readFileSync(path.join(__dirname, '/etc/nginx/mycert.key')),
-  cert: fs.readFileSync(path.join(__dirname, '/etc/nginx/mycert.crt')),
-}, app);
-
-
-sslServer.use(express.json());
-sslServer.use(bodyParser.json());
-sslServer.use(bodyParser.urlencoded({ extended: false }));
-sslServer.use(
+app.use(express.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(
   cors({
     origin: "*",
   })
 );
 
-sslServer.use(process.env.SERVICE_BASEPATH, router);
+app.use(process.env.SERVICE_BASEPATH, router);
+
+const sslServer = https.createServer({
+  key: fs.readFileSync(path.join(__dirname, '/etc/nginx/mycert.key')),
+  cert: fs.readFileSync(path.join(__dirname, '/etc/nginx/mycert.crt')),
+}, app);
 
 sslServer.listen(process.env.SERVICE_PORT, () =>
   console.log(
