@@ -71,9 +71,9 @@ exports.findAuction = async function (req, res, next) {
 exports.updateAuctionPlayer = async function (req, res, next) {
   try {
     const { auctionId, playerId } = req.params;
-    const { winner, wonFor } = req.body.payload;
+    const { winner, wonFor, role } = req.body.payload;
 
-    let ress = await Asta.findOneAndUpdate(
+    const updatedAuction = await Asta.findOneAndUpdate(
       { _id: auctionId, "listone.id": parseInt(playerId) },
       {
         $set: {
@@ -83,8 +83,52 @@ exports.updateAuctionPlayer = async function (req, res, next) {
       },
       { new: true } // restituisce il documento aggiornato
     );
+    if (updatedAuction) {
+      const auction = await Asta.findOne({ _id: auctionId });
 
-    console.log(ress);
+      if (!auction) {
+        console.log('Asta non trovata');
+        return;
+      }
+      
+      const memberIndex = auction.members.findIndex(member =>
+        member.email.substring(0, member.email.indexOf('@')) === winner
+      );
+
+      if (memberIndex === -1) {
+        console.log("Membro non trovato");
+        res.sendStatus(404);
+      }
+
+      const updateFields = {
+      };
+
+      if (role === "P") {
+        updateFields[`members.${memberIndex}.porLeft`] =
+          auction.members[memberIndex].porLeft - 1;
+      } else if (role === "C") {
+        updateFields[`members.${memberIndex}.ccLeft`] = auction.members[memberIndex].ccLeft - 1;;
+      } else if (role === "D") {
+        updateFields[`members.${memberIndex}.difLeft`] = auction.members[memberIndex].difLeft - 1;;
+      } else if (role === "A"){
+        updateFields[`members.${memberIndex}.attLeft`] = auction.members[memberIndex].attLeft - 1;;
+      }
+
+      updateFields[`members.${memberIndex}.creditsLeft`] =
+        auction.members[memberIndex].creditsLeft - parseInt(wonFor);
+
+      const updatedAuction = await Asta.findOneAndUpdate(
+        { _id: auctionId },
+        { $set: updateFields },
+        { new: true } // Restituisce il documento aggiornato
+      );
+
+      if (updatedAuction) {
+        console.log("Asta aggiornata con successo:", updatedAuction);
+      } else {
+        console.log("Errore durante l'aggiornamento dell'asta");
+      }
+    }
     res.sendStatus(200);
   } catch (err) {
     console.error(err);
@@ -112,6 +156,70 @@ exports.findWonPlayers = async function (req, res, next) {
       .catch((error) => {
         throw error;
       });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err);
+  }
+};
+
+exports.updateAuctionOptionsOrdineChiamata = async function (req, res, next) {
+  try {
+    const { auctionId } = req.params;
+    const newOrder = req.body.newOrder;
+    console.log(
+      "updateAuctionOptionsOrdineChiamata ASTA: " +
+        auctionId +
+        " NEW ORDER: " +
+        newOrder +
+        " START"
+    );
+
+    await Asta.findByIdAndUpdate(
+      auctionId,
+      { $set: { "astaOptions.ordineChiamata": newOrder } },
+      { new: true }
+    );
+
+    console.log(
+      "updateAuctionOptionsOrdineChiamata ASTA: " +
+        auctionId +
+        " NEW ORDER: " +
+        newOrder +
+        " END"
+    );
+    res.sendStatus(200);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err);
+  }
+};
+
+exports.updateAuctionOptionsCountdown = async function (req, res, next) {
+  try {
+    const { auctionId } = req.params;
+    const newCountdown = req.body.newCountdown;
+    console.log(
+      "updateAuctionOptionsCountdown ASTA: " +
+        auctionId +
+        " NEW COUNTDOWN: " +
+        newCountdown +
+        " START"
+    );
+
+    await Asta.findByIdAndUpdate(
+      auctionId,
+      { $set: { "astaOptions.countdown": newCountdown } },
+      { new: true }
+    );
+
+    console.log(
+      "updateAuctionOptionsCountdown ASTA: " +
+        auctionId +
+        " NEW COUNTDOWN: " +
+        newCountdown +
+        " END"
+    );
+    res.sendStatus(200);
   } catch (err) {
     console.error(err);
     res.status(500).send(err);
